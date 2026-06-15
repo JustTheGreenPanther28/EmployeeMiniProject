@@ -46,6 +46,9 @@ async function init() {
             const response = await fetch(`http://localhost:8080/employee/report/${id}`);
             if (response.ok) {
                 let data = await response.json();
+                if(data==undefined || data.length==0){
+                    alert("No employees to report to.");
+                }
                 for(let i=0; i<data.length; i++){
                     alert("Id and name of " + i+1 + " employee to report: " + data[i].id + " Name: " + data[i].name);
                 }
