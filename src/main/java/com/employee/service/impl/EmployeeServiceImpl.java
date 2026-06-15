@@ -68,9 +68,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 		while (current.getReportTo() != null) {
 			ReportEmployee reportTo = new ReportEmployee();
-			
-			reportTo.setId(current.getEmployeeId().toString());
-			reportTo.setName(current.getEmployeeName());
+
+			reportTo.setId(current.getReportTo().getEmployeeId().toString());
+			reportTo.setName(current.getReportTo().getEmployeeName());
 
 			reportsTo.add(reportTo);
 			current = current.getReportTo();
