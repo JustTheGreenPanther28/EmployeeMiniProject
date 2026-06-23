@@ -1,25 +1,32 @@
 let employees = [];
-let page = 0;
-let api = "http://localhost:8080/employee"
-async function fetchEmployees(page, size) {
+let api = "http://localhost:8080/employee";
+let totalPages = 0;
+let currPage = 0;
+let sortBy = "employeeName";
+let order = "asc"
+async function fetchEmployees(page, size, sortBy, order) {
     try {
-        let response = await fetch(api + `?page=${page}&size=${size}`);
+        let response = await fetch(api + `?page=${page}&size=${size}&sortBy=${sortBy}&order=${order}`);
         if (response.ok) {
             let data = await response.json();
             employees = data.content;
+            totalPages = data.totalPages;
         } else {
             const error = await response.json();
-            showAlert(" Error Occured, Unable fetch the data");
+            showAlert("Error Occured, Unable fetch the data");
         }
     } catch (error) {
-        showAlert(" Error Occured, Unable fetch the data");
+        showAlert("Error Occured, Unable fetch the data");
     }
     return employees;
 }
 
 async function init() {
-    let employeeValues = await fetchEmployees(page, 10);
+    let employeeValues = await fetchEmployees(currPage, 10,sortBy,order);
+    let currentPage = document.getElementById("curr-page");
+    currentPage.textContent = `Page ${currPage + 1} of ${totalPages}`;
     let tb = document.getElementById("table-body");
+    tb.innerHTML = "";
 
     for (let employee of employeeValues) {
         let newRow = `
@@ -34,6 +41,9 @@ async function init() {
         </tr>`;
         tb.insertAdjacentHTML("beforeend", newRow);
     }
+
+    prevPage.disabled = currPage === 0;
+    nextPage.disabled = currPage >= totalPages - 1;
 
     document.querySelectorAll(".reportToBtn").forEach(btn => {
         btn.addEventListener("click", async () => {
@@ -71,7 +81,7 @@ deletebtn.disable = true;
 deletebtn.addEventListener("click", async () => {
     let checkboxes = document.querySelectorAll('input[name="employeeSelect"]:checked');
     if (checkboxes.length === 0) {
-        showAlert("No employee is selected!",)
+        showAlert("No employee is selected!")
         return;
     }
 
@@ -111,6 +121,7 @@ all.addEventListener("click", () => {
 
 });
 
+//alert showing
 function showAlert(message, color = "#842029", background = "#f8d7da", border = "#f1aeb5") {
     alert = document.getElementById("alert");
     msg = document.getElementById("alert-message");
@@ -130,6 +141,39 @@ function showAlert(message, color = "#842029", background = "#f8d7da", border = 
         document.body.classList.remove("blocked");
     }, 2000);
 }
+
+//Pagination
+let prevPage = document.getElementById('prev-page');
+prevPage.addEventListener("click", () => {
+    if (currPage == 0) {
+        prevPage.style.backgroundColor = "darkgreen";
+        prevPage.disable = true;
+        return;
+    }
+    currPage--;
+    init();
+
+});
+let nextPage = document.getElementById('next-page');
+nextPage.addEventListener("click", () => {
+    if (currPage == totalPages - 1) {
+        nextPage.disable = true;
+        prevPage.style.backgroundColor = "darkgreen";
+        return;
+    }
+    currPage++;
+    init();
+})
+
+//sorting
+let sortSelect = document.getElementById('sort-select');
+sortSelect.addEventListener("change",() => {
+    currPage=0;
+    values = sortSelect.value.split(',');
+    sortBy=values[0];
+    order=values[1];
+    init();
+})
 
 document.addEventListener("DOMContentLoaded", init);
 // when the DOM is ready, call init

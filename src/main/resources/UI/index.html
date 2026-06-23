@@ -16,6 +16,18 @@
 			</div>
 			<button id="add-btn">+ Add Employee</button>
 			<button id="delete-btn">🗑️ Delete</button>
+			<select id="sort-select">
+				<option value="employeeName,asc">Name A→Z (Ascending)</option>
+				<option value="employeeName,desc">Name Z→A (Descending)</option>
+				<option value="joinDate,asc">Join Date (Ascending)</option>
+				<option value="joinDate,desc">Join Date (Descending)</option>
+				<option value="salary,asc">Salary (Ascending)</option>
+				<option value="salary,desc">Salary (Descending)</option>
+				<option value="age,asc">Age (Ascending)</option>
+				<option value="age,desc">Age (Descending)</option>
+				<option value="position,asc">Position (Ascending)</option>
+				<option value="position,desc">Position (Descending)</option>
+			</select>
 		</div>
 	</header>
 	<main>
@@ -52,7 +64,7 @@
 				</div>
 
 				<div>
-					<label for="employeeAge" >Age</label>
+					<label for="employeeAge">Age</label>
 					<input type="number" class="input-form" name="employeeAge" placeholder="21">
 				</div>
 
@@ -72,7 +84,10 @@
 				</div>
 
 				<div class="full">
-					<label for="reportTo">Report To</label>
+					<select id="report-to" class="input-form">Report to
+						
+					</select>
+					
 					<input type="text" class="input-form" id="reportTo" name="reportTo">
 				</div>
 
