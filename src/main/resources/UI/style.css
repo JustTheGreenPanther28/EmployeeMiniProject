@@ -181,6 +181,11 @@ tr:hover td {
 	font-family:sans-serif;
 	color:whitesmoke;
 }
+#prev-page:disabled,#next-page:disabled{
+	background-color:#177d4d;
+	color: greenyellow;
+	pointer-events: none;
+}
 
 #add-form {
 	display: none;
@@ -253,11 +258,18 @@ label {
 	display: grid;
 	justify-content: center;
 	align-items: center;
+	align-content: center;
 	background-color: #F5F5F5;
 	gap: 10px;
 }
 
 #submit-btn {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	align-content: center;
+	align-self: center;
+	width:100%;
 	margin-top: 20px;
 	background-color: #57C785;
 	color: white;
@@ -362,3 +374,4 @@ input[type="submit"] {
 input[type="submit"]:hover {
     opacity: 0.85;
 }
+

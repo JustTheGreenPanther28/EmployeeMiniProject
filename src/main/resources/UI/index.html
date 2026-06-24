@@ -61,37 +61,42 @@
 			<form>
 				<div class="full">
 					<label for="employeeName">Name</label>
-					<input type="text" class="input-form" name="employeeName" placeholder="Raj Kar" required>
+					<input id="employeeName" type="text" class="input-form" name="employeeName" placeholder="Raj Kar"
+						required>
 				</div>
 
 				<div>
 					<label for="employeeAge">Age</label>
-					<input type="number" class="input-form" name="employeeAge" placeholder="21">
+					<input id="employeeAge" type="number" class="input-form" name="employeeAge" placeholder="21"
+						required>
 				</div>
 
 				<div>
 					<label for="position">Position</label>
-					<input type="text" class="input-form" name="position" placeholder="Software Developer">
+					<input id="position" type="text" class="input-form" name="position" placeholder="Software Developer"
+						required>
 				</div>
 
 				<div>
 					<label for="salary">Salary</label>
-					<input type="number" class="input-form" name="salary" step="0.01" placeholder="10000.0">
+					<input id="salary" type="number" class="input-form" name="salary" step="0.01" placeholder="10000.0"
+						required>
 				</div>
 
 				<div>
 					<label for="joinDate">Join Date</label>
-					<input type="date" id="joinDate" class="input-form" name="joinDate" placeholder="09/09/2020">
+					<input id="joinDate" type="date" id="joinDate" class="input-form" name="joinDate"
+						placeholder="09/09/2020">
 				</div>
 				<div>
-					<label>Reports To</label> 
+					<label for="reportTo">Reports To</label>
 					<select id="report-to" class="input-form">Report to
-
+						
 					</select>
 				</div>
-					
-					
-				<input type="submit" value="Add Employee" id="submit-btn" class="full">
+
+
+				<input type="button" value="Add Employee" id="submit-btn" class="full">
 			</form>
 		</div>
 	</main>
