@@ -83,7 +83,7 @@ async function init() {
             }
             else {
                 const error = await response.json();
-                showAlert(btn.getAttribute('name') + " don't need to report anyone!","#0f5132", "#d1e7dd", "#badbcc");
+                showAlert(btn.getAttribute('name') + " don't need to report anyone!","#0f5132", "#d1e7dd", "#badbcc")
             }
         });
     });
