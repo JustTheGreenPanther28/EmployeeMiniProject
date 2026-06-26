@@ -1,5 +1,5 @@
 let employees = [];
-const api = "http://localhost:8080/employee";
+const api = "http://localhost:1010/employee";
 let size = 15;
 let totalPages = 0;
 let currPage = 0;

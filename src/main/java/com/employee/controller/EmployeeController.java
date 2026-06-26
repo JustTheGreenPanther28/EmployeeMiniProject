@@ -22,6 +22,8 @@ import com.employee.request.EmployeeAdditionRequest;
 import com.employee.response.EmployeeResponse;
 import com.employee.service.EmployeeService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -30,11 +32,7 @@ import jakarta.validation.constraints.NotNull;
 @RequestMapping("/employee")
 @CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE,
 		RequestMethod.PATCH })
-
-//201 for successful put/post
-//204 for successful deletion
-//404 for employee not found
-//409 conflict
+@Tag(name = "Employee Management", description = "APIs for managing employees — add, update, delete, search, and reporting hierarchy")
 public class EmployeeController {
 
 	private final EmployeeService employeeService;
@@ -43,12 +41,14 @@ public class EmployeeController {
 		this.employeeService = employeeService;
 	}
 
+	@Operation(summary = "Add a new employee")
 	@PostMapping
 	public ResponseEntity<?> addEmployees(@Valid @RequestBody EmployeeAdditionRequest employeeAdditionRequest) {
 		return ResponseEntity.status(HttpStatusCode.valueOf(201))
 				.body(employeeService.addEmployee(employeeAdditionRequest));
 	}
 
+	@Operation(summary = "Get all employees with pagination and sorting")
 	@GetMapping
 	public ResponseEntity<Page<EmployeeResponse>> getEmployees(@RequestParam @Min(0) int page,
 			@RequestParam @Min(0) int size, @RequestParam(defaultValue = "employeeName") String sortBy,
@@ -56,19 +56,20 @@ public class EmployeeController {
 		return ResponseEntity.ok(employeeService.getEmployees(page, size, sortBy, order));
 	}
 
+	@Operation(summary = "Get reporting hierarchy of an employee by ID")
 	@GetMapping("/report/{id}")
 	public ResponseEntity<?> getReportOfAEmployee(@PathVariable @NotNull UUID id) {
 		return ResponseEntity.ok(employeeService.getEmployeesReport(id));
 	}
 
+	@Operation(summary = "Delete an employee by ID")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteEmployee(@PathVariable @NotNull String id) {
 		employeeService.deleteEmployee(UUID.fromString(id));
 		return ResponseEntity.status(HttpStatusCode.valueOf(204)).build();
-
 	}
 
-	// Multiple Id deletion
+	@Operation(summary = "Delete multiple employees by list of IDs")
 	@DeleteMapping("/ids")
 	public ResponseEntity<Void> deleteEmployees(@Valid @NotNull @RequestBody List<String> ids) {
 		if (employeeService.deleteEmployees(ids)) {
@@ -77,12 +78,14 @@ public class EmployeeController {
 		return ResponseEntity.badRequest().build();
 	}
 
+	@Operation(summary = "Update employee details by ID")
 	@PatchMapping("/{id}")
 	public ResponseEntity<EmployeeResponse> updateEmployees(@PathVariable @NotNull UUID id,
 			@Valid @RequestBody EmployeeAdditionRequest employeeChangeRequest) {
 		return ResponseEntity.ok(employeeService.updateEmployee(id, employeeChangeRequest));
 	}
 
+	@Operation(summary = "Search employees by name or position")
 	@GetMapping("/search")
 	public ResponseEntity<Page<EmployeeResponse>> searchEmployees(@RequestParam String query,
 			@RequestParam @Min(0) int page, @RequestParam int size) {
