@@ -1,6 +1,6 @@
 let employees = [];
-const api = "http://localhost:1010/employee";
-let size = 15;
+const api = "http://localhost:1010/api/v1/employee";
+let size = 5;
 let totalPages = 0;
 let currPage = 0;
 let sortBy = "employeeName";
@@ -16,16 +16,17 @@ async function fetchEmployees(page, size, sortBy, order) {
             totalPages = data.totalPages;
         } else {
             const error = await response.json();
-            showAlert("Error Occured, Unable fetch the data");
+            showAlert("Error Occured, Unable fetch the data", success = false);
         }
     } catch (error) {
-        showAlert("Error Occured, Unable fetch the data");
+        showAlert("Error Occured, Unable fetch the data", success = false);
     }
     return employees;
 }
 
 async function init() {
     let employeeValues = await fetchEmployees(currPage, size, sortBy, order);
+
     let currentPage = document.getElementById("curr-page");
     if (totalPages !== 0) {
         currentPage.textContent = `Page ${currPage + 1} of ${totalPages}`;
@@ -38,6 +39,7 @@ async function init() {
     tb.innerHTML = "";
 
     for (let employee of employeeValues) {
+
         let newRow = `
         <tr>
             <td><input type="checkbox" name="employeeSelect" value="${employee.employeeId}" class="child-boxes"></td>
@@ -46,7 +48,7 @@ async function init() {
             <td>${employee.position}</td>
             <td>${employee.salary}</td>
             <td>${new Date(employee.joinDate).toLocaleDateString()}</td>
-            <td><button class="reportToBtn" data-id="${employee.employeeId}" name="${employee.employeeName}">Report To</button></td>
+            <td><button class="reportToBtn" data-id="${employee.employeeId}" reporter="${employee.reportTo.reporter}" reportTo="${employee.reportTo.reportTo}">Report To</button></td>
             <td><button class="editBtn" 
             data-id = "${employee.employeeId}" 
             name = "${employee.employeeName}"
@@ -54,6 +56,7 @@ async function init() {
             position = "${employee.position}"
             salary = "${employee.salary}"
             joinDate = "${employee.joinDate}">
+
             <img src="img.png" width=20px height=20px>
             </button>
             <button class="individual-delete" data-id="${employee.employeeId}" name = "${employee.employeeName}">
@@ -71,19 +74,13 @@ async function init() {
     //add event listener to all report button
     document.querySelectorAll(".reportToBtn").forEach(btn => {
         btn.addEventListener("click", async () => {
-            let id = btn.getAttribute("data-id");
-            const response = await fetch(api + `/report/${id}`);
-            if (response.ok) {
-                let data = await response.json();
-                if (data == undefined || data.length == 0) {
-                    showAlert("No employees found!");
-                    return;
-                }
-                showAlert('"'+(data[0].reporter)+'" must report to "'+ (data[0].reportTo)+'"' , "#0f5132", "#d1e7dd", "#badbcc");
+            let reporter = btn.getAttribute("reporter");
+            let reportTo = btn.getAttribute("reportTo");
+            if (!reportTo || reportTo === "null") {
+                showAlert(reporter + " doesn't need to report anyone", success = true);
             }
             else {
-                const error = await response.json();
-                showAlert(btn.getAttribute('name') + " don't need to report anyone!","#0f5132", "#d1e7dd", "#badbcc")
+                showAlert('"' + reporter + '"' + "must report to " + '"' + reportTo + '"', success = true);
             }
         });
     });
@@ -121,22 +118,17 @@ async function init() {
 
             const response = await fetch(api + `/${id}`, {
                 method: "DELETE",
-                // header: {
-                //     "Content-Type": "application/json"
-                // }
             });
 
-            if(response.status == 204){
-                showAlert(`${btn.getAttribute('name')} Deleted!`,"#0f5132", "#d1e7dd", "#badbcc");
+            if (response.status == 204) {
+                showAlert(`${btn.getAttribute('name')} Deleted!`, success = true);
                 init();
             }
-            else{
-                showAlert(`Failed to delete ${btn.getAttribute('name')}, as other people report to him!`);
+            else {
+                showAlert(`Failed to delete ${btn.getAttribute('name')}, as other people report to him!`, success = false);
             }
         })
     })
-
-    addEmployeeToReport(employeeValues);
 }
 
 document.getElementById("add-btn").addEventListener("click", () => {
@@ -161,7 +153,7 @@ deletebtn.disable = true;
 deletebtn.addEventListener("click", async () => {
     let checkboxes = document.querySelectorAll('input[name="employeeSelect"]:checked');
     if (checkboxes.length === 0) {
-        showAlert("No employee is selected!")
+        showAlert("No employee is selected!", success = false)
         return;
     }
 
@@ -177,7 +169,7 @@ deletebtn.addEventListener("click", async () => {
     } else {
         const text = await response.text();
         const message = text ? JSON.parse(text).message : response.statusText;
-        showAlert(`Failed to delete, as one of id is a reporter`);
+        showAlert(`Failed to delete, as one of id is a reporter`, success = false);
         return;
     }
     document.getElementById("all").checked = false;
@@ -236,16 +228,46 @@ sortSelect.addEventListener("change", () => {
     init();
 })
 
-// employee report to 
-function addEmployeeToReport(employees) {
-    if (employees == undefined || employees == null || employees == "") {
-        return;
-    }
-    let reportTo = document.getElementById('report-to');
-    reportTo.innerHTML = `<option value="" id="none">-- None --</option>`;
-    for (let employee of employees) {
-        let newOption = new Option(`${employee.employeeName}  (${employee.numberOfEmployeesReportToEmployee})`, `${employee.employeeId}`);
-        reportTo.add(newOption);
+//sorting through heading name
+
+const headers = ["head-name", "head-age", "head-position", "head-salary", "head-joinDate"];
+//applying event listener to all headers
+headers.forEach(id => {
+    const btn = document.getElementById(id);
+    btn.dataset.order = "asc"; // by default It should be in asc order
+    btn.addEventListener("click", () => {
+        btn.dataset.order = btn.dataset.order === "asc" ? "desc" : "asc";
+        sortBy = btn.value;
+        order = btn.dataset.order;
+        currPage = 0;
+        init();
+    });
+});
+
+
+// employee report to in additon of employee
+async function addEmployeeToReport() {
+
+    const response = await fetch(api + "/report", {
+        method: "GET"
+    })
+
+    if (response.ok) {
+
+        let data = response.json();
+
+        let countAndName = data.content;
+
+        if (countAndName == undefined || countAndName == null || countAndName == "") {
+            return;
+        }
+        let reportTo = document.getElementById('report-to');
+        reportTo.innerHTML = `<option value="" id="none">-- None --</option>`;
+        for (let employee of employees) {
+            //   ---------------This is Text----------------    -------value---------
+            let newOption = new Option(`${employee.employeeName}  (${employee.count})`, `${employee.employeeId}`);
+            reportTo.add(newOption);
+        }
     }
 }
 
@@ -270,16 +292,16 @@ async function submit(id = null) {
         joinDate = joinDate + "T00:00:00Z";
     }
     if (!isNaN(employeeName) || employeeName == "" || employeeName.length === 0) {
-        showAlert("Please enter a valid name!");
+        showAlert("Please enter a valid name!", success = false);
         return;
     }
     if (employeeAge == undefined || employeeAge == "" || isNaN(employeeAge) || employeeAge < 18 || employeeAge >= 100) {
-        showAlert("Please enter a valid age (must be 18 or older).");
+        showAlert("Please enter a valid age (must be 18 or older).", success = false);
         return;
     }
 
     if (salary == "" || salary == undefined || parseFloat(salary) < 0) {
-        showAlert("Please enter a valid salary!");
+        showAlert("Please enter a valid salary!", success = false);
         return;
     }
 
@@ -302,7 +324,8 @@ async function submit(id = null) {
                 body: JSON.stringify(payload)
             });
         if (response.ok) {
-            showAlert("Employee added!", "#0f5132", "#d1e7dd", "#badbcc");
+            showAlert("Employee added!", success = true);
+            addEmployeeToReport(employeeValues);
             init();
             document.getElementById('add-form-form').reset();
             document.getElementById('add-form').style.display = 'none';
@@ -310,7 +333,7 @@ async function submit(id = null) {
             return;
         } else {
             const error = await response.json();
-            showAlert("Failed: " + error.message);
+            showAlert("Failed: " + error.message, success = false);
             return;
         }
     }
@@ -324,29 +347,34 @@ async function submit(id = null) {
                 body: JSON.stringify(payload)
             });
         if (response.ok) {
-            showAlert("Employee edited!", "#0f5132", "#d1e7dd", "#badbcc");
+            showAlert("Employee edited!", success = true);
             init();
             document.getElementById('add-form-form').reset();
-            document.getElementById('add-form').style.display='none';
+            document.getElementById('add-form').style.display = 'none';
             return;
         } else {
             const error = await response.json();
-            showAlert("Failed: " + error.message);
+            showAlert("Failed: " + error.message, success = false);
             return;
         }
     }
+    addEmployeeToReport(employeeValues);
 }
 
-//alert showing
-function showAlert(message, color = "#842029", background = "#f8d7da", border = "#f1aeb5") {
+function showAlert(message, success) {
+    let color, background, border;
+    if (!success) {
+        color = "#842029"; background = "#f8d7da"; border = "#f1aeb5";
+    }
+    else {
+        color = "#0f5132"; background = "#d1e7dd"; border = "#badbcc";
+    }
     alert = document.getElementById("alert");
     msg = document.getElementById("alert-message");
-    table = document.getElementsByClassName('table-wrap')[0];
     alert.style.backgroundColor = background;
     alert.style.borderColor = border;
     alert.style.display = "flex";
     msg.style.color = color;
-    table.style.marginTop = "50px";
     document.body.classList.add("blocked");
     msg.textContent = "";
     msg.append(" " + message);
@@ -354,9 +382,8 @@ function showAlert(message, color = "#842029", background = "#f8d7da", border = 
     setTimeout(() => {
         alert.style.display = "none";
         msg.textContent = "";
-        table.style.marginTop = "20px";
         document.body.classList.remove("blocked");
-    }, 5000);
+    }, 3000);
 }
 
 let searchInput = document.getElementById("search-input");
