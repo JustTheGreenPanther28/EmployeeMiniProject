@@ -111,7 +111,7 @@ async function fetchEmployees(page, size, sortBy, order) {
 // employee report to in additon of employee
 async function addEmployeeToReport() {
 
-    const response = await fetch(api + "/report", {
+    const response = await fetch(api+ "?report=true", {
         method: "GET"
     })
 
@@ -137,7 +137,8 @@ async function addEmployeeToReport() {
 
 async function searchEmployees(query) {
     try {
-        const response = await fetch(api + `/search?query=${encodeURIComponent(query)}&page=0&size=10`);
+        //URLs can't contain spaces, &, =, ? that's why encodeURIComponent
+        const response = await fetch(api + `?searchQuery=${encodeURIComponent(query)}`);
         if (response.ok) {
             let data = await response.json();
             let tb = document.getElementById("table-body");
@@ -402,7 +403,7 @@ deletebtn.addEventListener("click", async () => {
     let ids = Array.from(checkboxes).map(checkbox => checkbox.value);
 
     try {
-        const response = await fetch(api + `/ids`, {
+        const response = await fetch(api, {
             method: "DELETE",
             body: JSON.stringify(ids),
             headers: { "Content-Type": "application/json" }
@@ -428,7 +429,7 @@ deletebtn.addEventListener("click", async () => {
                 document.body.classList.add('blocked');
 
                 document.getElementById('yes').addEventListener("click", async () => {
-                    const response = await fetch(api + `/search-delete/ids`, {
+                    const response = await fetch(api + `?searchDelete=true`, {
                         method: "DELETE",
                         body: JSON.stringify(ids),
                         headers: { "Content-Type": "application/json" }

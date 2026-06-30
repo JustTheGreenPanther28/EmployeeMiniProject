@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -70,7 +69,7 @@ public class EmployeeController {
 			return ResponseEntity.ok(employeeService.getReports());
 		}
 		if (!searchQuery.isBlank()) {
-			return ResponseEntity.ok(employeeService.searchEmployees(searchQuery, page, size));
+			return ResponseEntity.ok(employeeService.searchEmployees(searchQuery));
 		}
 		return ResponseEntity.ok(employeeService.getEmployees(page, size, sortBy, order));
 	}

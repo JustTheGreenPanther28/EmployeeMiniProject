@@ -49,9 +49,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 	}
 
 	@Override
-	public Page<EmployeeResponse> searchEmployees(String query, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size);
-		return employeeRepo.findByEmployeeNameContainingIgnoreCaseOrPositionContainingIgnoreCase(query, query, pageable)
+	public Page<EmployeeResponse> searchEmployees(String query) {
+		return employeeRepo.findByEmployeeNameContainingIgnoreCaseOrPositionContainingIgnoreCase(query, query)
 				.map(employeeEntity -> {
 					EmployeeResponse response = new EmployeeResponse(employeeEntity);
 					return response;

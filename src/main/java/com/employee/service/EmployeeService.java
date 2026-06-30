@@ -11,17 +11,17 @@ import com.employee.request.EmployeeAdditionRequest;
 import com.employee.response.EmployeeResponse;
 
 public interface EmployeeService {
-	EmployeeResponse addEmployee(EmployeeAdditionRequest employeeAdditionRequest) throws EmployeeNotFoundException;
+	EmployeeResponse addEmployee(EmployeeAdditionRequest employeeAdditionRequest);
 
 	Page<EmployeeResponse> getEmployees(int page, int size, String sortBy, String order);
 	List<EmployeeProjectionInterface> getReports() throws EmployeeNotFoundException;
 
 	
-	EmployeeResponse updateEmployee(UUID id , EmployeeAdditionRequest employeeChangeRequest) throws EmployeeNotFoundException;
+	EmployeeResponse updateEmployee(UUID id , EmployeeAdditionRequest employeeChangeRequest);
 	
-	Page<EmployeeResponse> searchEmployees(String query, int page, int size);
+	Page<EmployeeResponse> searchEmployees(String query);
 	
-	void deleteEmployee(UUID publicId) throws EmployeeNotFoundException;
+	void deleteEmployee(UUID publicId);
 	int deleteEmployees(List<String> publicIds);
 	int searchDelete(List<String> publicIds);
 }

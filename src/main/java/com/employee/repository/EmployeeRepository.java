@@ -20,7 +20,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, String> {
 //	@Query("SELECT e FROM Employee e WHERE " + "LOWER(e.employeeName) LIKE LOWER(CONCAT('%', :query, '%')) OR "
 //			+ "LOWER(e.position) LIKE LOWER(CONCAT('%', :query, '%'))") <--- USING QUERY
 	Page<Employee> findByEmployeeNameContainingIgnoreCaseOrPositionContainingIgnoreCase(String employeeName,
-			String position, Pageable pageable);
+			String position);
 
 	long countByReportTo(Employee reportTo);
 
