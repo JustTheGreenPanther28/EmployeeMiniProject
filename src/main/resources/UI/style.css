@@ -69,13 +69,13 @@ button {
 }
 
 header {
+	position: sticky;
 	top: 0;
 	width: 100%;
 	padding: 0 24px;
 	height: 64px;
 	background: #198754;
 	border-bottom: 1px solid #2d2d2d;
-	border-radius: 0;
 	display: flex;
 	align-items: center;
 	align-content: center;
@@ -138,6 +138,13 @@ header {
 	margin-bottom: 20px;
 	padding: 0 40px;
 	border-radius: 25px;
+}
+
+#table-container {
+	max-height: 500px;
+	overflow-y: auto;
+	border-radius: 12px;
+	width: 100%;
 }
 
 table {
@@ -248,17 +255,47 @@ tr:hover td {
 	font-weight: 900;
 	width: 550px;
 	height: auto;
-	height: 450px;
 	max-height: 90vh;
 	overflow-y: auto;
-	z-index: 2;
+	z-index: 1000;
 	gap: 2px;
 	pointer-events: all;
+	position: fixed; /* keep */
+}
+
+.input-error {
+	border: 2px solid #dc3545 !important;
+	background-color: #fff5f5 !important;
+}
+
+.field-error {
+	display: block;
+	color: #dc3545;
+	font-size: 11px;
+	font-weight: 600;
+	margin-top: 2px;
+	min-height: 14px;
+	grid-column: inherit;
+}
+
+#cross {
+	position: absolute;
+	top: 0px;
+	right: 16px;
+	padding: 5px;
+	margin: 0;
+	color: black;
+	font-size: larger;
+	background-color: transparent;
+	border: none;
+	font-weight: 1000;
+	cursor: pointer;
 }
 
 #employee-add {
 	width: auto;
 	height: auto;
+	position: relative;
 }
 .alert {
     display: none;
@@ -323,8 +360,10 @@ tr:hover td {
 .alert-form-message {}
 
 #random-btn {
+	position: relative;
+	top:20px;
 	padding: 6px 12px;
-	background-color: #f0f0f0;
+	background : linear-gradient(#fafafa, #e8e8e8);
 	color: #333;
 	border: 1px solid #ccc;
 	border-radius: 8px;
@@ -334,8 +373,7 @@ tr:hover td {
 }
 
 #random-btn:hover {
-	background-color: #198754;
-	color: white;
+	color: red;
 	border-color: #198754;
 }
 
@@ -448,30 +486,19 @@ label {
 
 #submit-btn {
 	display: block;
-	width: 100%;
-	margin-top: 10px;
+	width: auto;
+	min-width: 180px;
+	margin: 16px auto 0;
+	padding: 10px 30px;
 	background-color: #57C785;
 	color: white;
 	grid-column: 1 / -1;
+	border-radius: 8px;
 }
-
 
 #submit-btn:hover {
 	background-color: darkgreen;
 	color: wheat;
-}
-
-#cross {
-	padding: 5px;
-	margin: 0;
-	color: black;
-	font-size: larger;
-	position: relative;
-	left: 250px;
-	top: -80px;
-	background-color: transparent;
-	border: none;
-	font-weight: 1000;
 }
 
 #cross:hover {
@@ -515,34 +542,45 @@ label {
 	color: #666;
 	margin-bottom: 4px;
 }
-
-input {
+input,
+select {
 	width: 100%;
-	padding: 8px 10px;
+	height: 42px;
+	padding: 0 8px;
 	font-size: 14px;
 	border: 1px solid #ddd;
 	border-radius: 8px;
 	background: #fafafa;
 	outline: none;
+	box-sizing: border-box;
 	transition: border-color 0.15s;
 }
 
 select {
-	width: 100%;
-	padding: 0 12px;
-	font-size: 14px;
-	box-sizing: border-box;
+	cursor: pointer;
+	appearance: none;
+	-webkit-appearance: none;
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	background-size: 18px;
+	padding-right: 36px;
 }
 
-input:focus {
+input:focus,
+select:focus {
 	border-color: #999;
-	background: #fff;
+	background-color: #fff;
 }
 
 label[for="employeeName"],
 input#employeeName,
 label[for="reportTo"],
 input#reportTo,
+label[for="report-to"],
+select#report-to,
+label[for="position"],
+select#position,
 input[type="submit"] {
 	grid-column: 1 / -1;
 }

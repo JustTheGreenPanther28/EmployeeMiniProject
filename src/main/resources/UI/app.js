@@ -1,6 +1,6 @@
 let employees = [];
 const api = "http://localhost:1010/api/v1/employee";
-let size = 5;
+let size = 15;
 let totalPages = 0;
 let currPage = 0;
 let sortBy = "employeeName";
@@ -99,16 +99,14 @@ async function fetchEmployees(page, size, sortBy, order) {
             employees = data.content;
             totalPages = data.totalPages;
         } else {
-            const error = await response.json();
-            showAlert("Error Occured, Unable fetch the data", success = false);
+            showAlert("Error Occured, Unable fetch the data", false);
         }
     } catch (error) {
-        showAlert("Error Occured, Unable fetch the data", success = false);
+        showAlert("Error Occured, Unable fetch the data", false);
     }
     return employees;
 }
 
-// employee report to in additon of employee
 async function addEmployeeToReport() {
 
     const response = await fetch(api + "?report=true", {
@@ -128,16 +126,97 @@ async function addEmployeeToReport() {
         reportTo.innerHTML = `<option value="" id="none">-- None --</option>`;
 
         for (let countAndName of data) {
-            //option has text and value
             let newOption = new Option(`${countAndName.employeeName}  (${countAndName.count})`, `${countAndName.employeeId}`);
             reportTo.add(newOption);
         }
     }
 }
 
+function buildRow(employee) {
+    return `
+    <tr>
+        <td><input type="checkbox" name="employeeSelect" value="${employee.employeeId}" class="child-boxes"></td>
+        <td>${employee.employeeName}</td>
+        <td>${employee.employeeAge}</td>
+        <td>${employee.position}</td>
+        <td>${employee.salary}</td>
+        <td>${new Date(employee.joinDate).toLocaleDateString()}</td>
+        <td><button class="reportToBtn" reporter="${employee.employeeName}" reportTo="${employee.reportTo ? employee.reportTo.reportToName : ''}">Report To</button></td>
+        <td><button class="editBtn"
+        data-id="${employee.employeeId}"
+        name="${employee.employeeName}"
+        age="${employee.employeeAge}"
+        position="${employee.position}"
+        salary="${employee.salary}"
+        joinDate="${employee.joinDate}"
+        reportToId="${employee.reportTo ? employee.reportTo.reportToId : ''}">
+        <img src="img.png" width=20px height=20px>
+        </button>
+        <button class="individual-delete" data-id="${employee.employeeId}" name="${employee.employeeName}">
+        <img src="bin.png" width=25px height=25px>
+        </button></td>
+    </tr>`;
+}
+
+function attachRowListeners() {
+    document.querySelectorAll(".reportToBtn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            let reporter = btn.getAttribute("reporter");
+            let reportTo = btn.getAttribute("reportTo");
+            if (!reportTo || reportTo === "null") {
+                showAlert(reporter + " doesn't need to report anyone", true);
+            } else {
+                showAlert('"' + reporter + '"' + " must report to " + '"' + reportTo + '"', true);
+            }
+        });
+    });
+
+    document.querySelectorAll(".editBtn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            let id = btn.getAttribute("data-id");
+            let editform = document.getElementById('add-form');
+            editform.children[0].textContent = "Edit Employee";
+            editform.style.display = 'flex';
+            document.body.classList.add('blocked');
+
+            document.getElementById('employeeName').value = btn.getAttribute('name');
+            document.getElementById('employeeAge').value = btn.getAttribute('age');
+            document.getElementById('position').value = btn.getAttribute('position') || "";
+            document.getElementById('salary').value = btn.getAttribute('salary');
+            document.getElementById('joinDate').value = btn.getAttribute('joinDate').split("T")[0];
+            document.getElementById('report-to').value = btn.getAttribute('reportToId') || "";
+
+            submitBtn.replaceWith(submitBtn.cloneNode(true));
+            submitBtn = document.getElementById("submit-btn");
+            submitBtn.value = "Edit Employee";
+            submitBtn.addEventListener("click", () => submit(id));
+        });
+    });
+
+    document.querySelectorAll('.individual-delete').forEach(btn => {
+        btn.addEventListener("click", async () => {
+            let id = btn.getAttribute('data-id');
+
+            try {
+                const response = await fetch(api + `/${id}`, {
+                    method: "DELETE",
+                });
+
+                if (response.status == 204) {
+                    showAlert(`${btn.getAttribute('name')} Deleted!`, true);
+                    init();
+                } else {
+                    showAlert(`Failed to delete ${btn.getAttribute('name')}, as other people report to him!`, false);
+                }
+            } catch (error) {
+                showAlert("Failed: " + error.message, false);
+            }
+        });
+    });
+}
+
 async function searchEmployees(query) {
     try {
-        //URLs can't contain spaces, &, =, ? that's why encodeURIComponent
         const response = await fetch(api + `?searchQuery=${encodeURIComponent(query)}`);
         if (response.ok) {
             let data = await response.json();
@@ -148,33 +227,22 @@ async function searchEmployees(query) {
             nextPage.disabled = true;
 
             for (let employee of data.content) {
-                let newRow = `
-                <tr>
-                    <td><input type="checkbox" name="employeeSelect" value="${employee.employeeId}" class="child-boxes"></td>
-                    <td>${employee.employeeName}</td>
-                    <td>${employee.employeeAge}</td>
-                    <td>${employee.position}</td>
-                    <td>${employee.salary}</td>
-                    <td>${new Date(employee.joinDate).toLocaleDateString()}</td>
-                    <td><button class="reportToBtn" data-id="${employee.employeeId}">Report To</button></td>
-                    <td><button class="editBtn" data-id="${employee.employeeId}">Edit</button></td>
-                </tr>`;
-                tb.insertAdjacentHTML("beforeend", newRow);
+                tb.insertAdjacentHTML("beforeend", buildRow(employee));
             }
+
+            attachRowListeners();
         } else {
-            showAlert("Search failed!");
+            showAlert("Search failed!", false);
         }
     } catch (error) {
-        showAlert("Error occurred while searching");
+        showAlert("Error occurred while searching", false);
     }
 }
 
-//Adding employees
 async function submit(id = null) {
     event.preventDefault();
-    // submitBtn.disable = true;
     submitBtn.style.borderColor = "black";
-
+    clearAllFieldErrors();
 
     let employeeName = document.getElementById("employeeName").value;
     let employeeAge = document.getElementById("employeeAge").value;
@@ -185,23 +253,30 @@ async function submit(id = null) {
 
     if (joinDate == undefined || joinDate == "") {
         joinDate = new Date().toISOString();
-    }
-    else {
+    } else {
         joinDate = joinDate + "T00:00:00Z";
     }
-    if (!isNaN(employeeName) || employeeName == "" || employeeName.length === 0 || employeeName.length > 100) {
-        showAlert("Please enter a valid name!", success = false, position = "form");
-        return;
+
+    let hasError = false;
+
+    if (!isNaN(employeeName) || employeeName.trim() === "" || employeeName.length > 100) {
+        setFieldError("employeeName", "Please enter a valid name.");
+        hasError = true;
     }
-    if (employeeAge == undefined || employeeAge == "" || isNaN(employeeAge) || employeeAge < 18 || employeeAge >= 300) {
-        showAlert("Please enter a valid age (must be 18 or older).", success = false, position = "form");
-        return;
+    if (employeeAge === "" || isNaN(employeeAge) || employeeAge < 18 || employeeAge >= 300) {
+        setFieldError("employeeAge", "Age must be 18 or older.");
+        hasError = true;
+    }
+    if (position === "") {
+        setFieldError("position", "Please select a position.");
+        hasError = true;
+    }
+    if (salary === "" || isNaN(salary) || parseFloat(salary) < 0) {
+        setFieldError("salary", "Please enter a valid salary.");
+        hasError = true;
     }
 
-    if (salary == "" || salary == undefined || parseFloat(salary) < 0) {
-        showAlert("Please enter a valid salary!", success = false, position = "form");
-        return;
-    }
+    if (hasError) return;
 
     let payload = {
         name: employeeName,
@@ -223,19 +298,18 @@ async function submit(id = null) {
                     body: JSON.stringify(payload)
                 });
             if (response.ok) {
-                showAlert("Employee added!", success = true);
+                showAlert("Employee added!", true);
                 init();
                 document.getElementById('add-form-form').reset();
                 document.getElementById('add-form').style.display = 'none';
-                submitBtn.disable = true;
+                document.body.classList.remove('blocked');
                 return;
             } else {
                 const error = await response.json();
-                showAlert("Failed: " + error.message, success = false, position = "form");
+                showAlert("Failed: " + error.message, false, "form");
                 return;
             }
-        }
-        else {
+        } else {
             response = await fetch(api + `/${id}`,
                 {
                     method: "PATCH",
@@ -245,22 +319,41 @@ async function submit(id = null) {
                     body: JSON.stringify(payload)
                 });
             if (response.ok) {
-                showAlert("Employee edited!", success = true);
+                showAlert("Employee edited!", true);
                 init();
                 document.getElementById('add-form-form').reset();
                 document.getElementById('add-form').style.display = 'none';
+                document.body.classList.remove('blocked');
                 return;
             } else {
                 const error = await response.json();
-                showAlert("Failed: Kindly enter valid values", success = false, position = "form");
+                showAlert("Failed: Kindly enter valid values", false, "form");
                 return;
             }
         }
     } catch (error) {
-        showAlert("Failed: " + error.message, success = false);
+        showAlert("Failed: " + error.message, false);
     }
 }
 
+function setFieldError(fieldId, message) {
+    document.getElementById(fieldId).classList.add("input-error");
+    document.getElementById(fieldId + "-error").textContent = message;
+}
+
+function clearFieldError(fieldId) {
+    document.getElementById(fieldId).classList.remove("input-error");
+    document.getElementById(fieldId + "-error").textContent = "";
+}
+
+function clearAllFieldErrors() {
+    document.querySelectorAll(".input-error").forEach(field => {
+        field.classList.remove("input-error");
+    });
+    document.querySelectorAll(".field-error").forEach(span => {
+        span.textContent = "";
+    });
+}
 
 async function init() {
     let employeeValues = await fetchEmployees(currPage, size, sortBy, order);
@@ -268,8 +361,7 @@ async function init() {
     let currentPage = document.getElementById("curr-page");
     if (totalPages !== 0) {
         currentPage.textContent = `Page ${currPage + 1} of ${totalPages}`;
-    }
-    else {
+    } else {
         currentPage.textContent = `Page ${currPage} of ${totalPages}`;
     }
 
@@ -277,97 +369,13 @@ async function init() {
     tb.innerHTML = "";
 
     for (let employee of employeeValues) {
-        let newRow = `
-        <tr>
-            <td><input type="checkbox" name="employeeSelect" value="${employee.employeeId}" class="child-boxes"></td>
-            <td>${employee.employeeName}</td>
-            <td>${employee.employeeAge}</td>
-            <td>${employee.position}</td>
-            <td>${employee.salary}</td>
-            <td>${new Date(employee.joinDate).toLocaleDateString()}</td>
-            <td><button class="reportToBtn" reporter="${employee.employeeName}" reportTo="${employee.reportTo}">Report To</button></td>
-            <td><button class="editBtn" 
-            data-id = "${employee.employeeId}" 
-            name = "${employee.employeeName}"
-            age = "${employee.employeeAge}"
-            position = "${employee.position}"
-            salary = "${employee.salary}"
-            joinDate = "${employee.joinDate}">
-
-            <img src="img.png" width=20px height=20px>
-            </button>
-            <button class="individual-delete" data-id="${employee.employeeId}" name = "${employee.employeeName}">
-            <img src="bin.png" width=25px height=25px>
-            </button></td>
-
-        </tr>`;
-        tb.insertAdjacentHTML("beforeend", newRow);
+        tb.insertAdjacentHTML("beforeend", buildRow(employee));
     }
 
     prevPage.disabled = currPage === 0;
     nextPage.disabled = currPage >= totalPages - 1;
 
-    //add event listener to all report button
-    document.querySelectorAll(".reportToBtn").forEach(btn => {
-        btn.addEventListener("click", async () => {
-            let reporter = btn.getAttribute("reporter");
-            let reportTo = btn.getAttribute("reportTo");
-            if (!reportTo || reportTo === "null") {
-                showAlert(reporter + " doesn't need to report anyone", success = true);
-            }
-            else {
-                showAlert('"' + reporter + '"' + "must report to " + '"' + reportTo + '"', success = true);
-            }
-        });
-    });
-
-    //event listener to all edit buttons
-    document.querySelectorAll(".editBtn").forEach(btn => {
-        btn.addEventListener("click", async () => {
-            let id = btn.getAttribute("data-id");
-            let editform = document.getElementById('add-form');
-            editform.children[0].textContent = "Edit Employee";
-            editform.style.display = 'flex';
-
-            //Adding new values
-            document.getElementById('employeeName').value = btn.getAttribute('name');
-            document.getElementById('employeeAge').value = btn.getAttribute('age');
-            if (btn.position != undefined || btn.position != "") {
-                document.getElementById('position').value = btn.getAttribute('position');
-            }
-            document.getElementById('salary').value = btn.getAttribute('salary');
-            document.getElementById('joinDate').value = btn.getAttribute('joinDate').split("T")[0];
-
-            // remove old listener
-            submitBtn.replaceWith(submitBtn.cloneNode(true));
-            submitBtn = document.getElementById("submit-btn");
-            submitBtn.value = "Edit Employee";
-            submitBtn.addEventListener("click", () => submit(id));
-        });
-    });
-
-    //event listener to add individual-delete buttons 
-    document.querySelectorAll('.individual-delete').forEach(btn => {
-        btn.addEventListener("click", async () => {
-            let id = btn.getAttribute('data-id');
-
-            try {
-                const response = await fetch(api + `/${id}`, {
-                    method: "DELETE",
-                });
-
-                if (response.status == 204) {
-                    showAlert(`${btn.getAttribute('name')} Deleted!`, success = true);
-                    init();
-                }
-                else {
-                    showAlert(`Failed to delete ${btn.getAttribute('name')}, as other people report to him!`, success = false);
-                }
-            } catch (error) {
-                showAlert("Failed: " + error.message, success = false);
-            }
-        })
-    })
+    attachRowListeners();
     addEmployeeToReport();
 }
 
@@ -387,16 +395,14 @@ document.getElementById('cross').addEventListener("click", () => {
     let addform = document.getElementById('add-form');
     document.body.classList.remove('blocked');
     addform.style.display = 'none';
-    addform.children[3].reset();
+    document.getElementById('add-form-form').reset();
 });
 
-//Bulk delete
-deletebtn = document.getElementById("delete-btn");
-deletebtn.disable = true;
+let deletebtn = document.getElementById("delete-btn");
 deletebtn.addEventListener("click", async () => {
     let checkboxes = document.querySelectorAll('input[name="employeeSelect"]:checked');
     if (checkboxes.length === 0) {
-        showAlert("No employee is selected!", success = false)
+        showAlert("No employee is selected!", false);
         return;
     }
 
@@ -410,17 +416,14 @@ deletebtn.addEventListener("click", async () => {
         });
         if (response.ok) {
             const json = await response.json();
-            showAlert(json.deletionCount + " Employee(s) Successfully deleted!", success = true);
+            showAlert(json.deletionCount + " Employee(s) Successfully deleted!", true);
             init();
-        } 
-        else {
+        } else {
             const text = await response.text();
             if (checkboxes.length == 1) {
-                const message = text ? JSON.parse(text).message : response.statusText;
-                showAlert(`Failed to delete, as one of id is a reporter`, success = false);
+                showAlert(`Failed to delete, as one of id is a reporter`, false);
                 return;
-            }
-            else {
+            } else {
                 let takenInput = document.getElementById('take-input');
                 takenInput.style.display = 'flex';
                 document.body.classList.add('blocked');
@@ -432,59 +435,45 @@ deletebtn.addEventListener("click", async () => {
                         headers: { "Content-Type": "application/json" }
                     });
                     if (response.ok) {
-                        showAlert("loading...",success=true);
+                        showAlert("loading...", true);
                         const json1 = await response.json();
-                        showAlert(json1.deletionCount + " Employees (who were not referenced by other employees) were Removed", success = true);
+                        showAlert(json1.deletionCount + " Employees (who were not referenced by other employees) were Removed", true);
                         takenInput.style.display = 'none';
                         document.body.classList.remove('blocked');
                         init();
-                    }
-                    else {
-                        showAlert("Employee(s) can't be deleted!", success = false);
+                    } else {
+                        showAlert("Employee(s) can't be deleted!", false);
                         takenInput.style.display = 'none';
                         document.body.classList.remove('blocked');
                     }
                 });
                 document.getElementById("no").addEventListener("click", () => {
                     takenInput.style.display = 'none';
-                    showAlert("Deletion canceled!", success = true);
-                })
+                    document.body.classList.remove('blocked');
+                    showAlert("Deletion canceled!", true);
+                });
             }
         }
     } catch (error) {
-        showAlert("Unable to delete employees!",success=false);
+        showAlert("Unable to delete employees!", false);
     }
     document.getElementById("all").checked = false;
 });
 
 
-//Select all
-all = document.getElementById("all");
+let all = document.getElementById("all");
 all.addEventListener("click", () => {
     let childboxes = document.querySelectorAll(".child-boxes")
-    if (all.checked) {
-        childboxes.forEach(
-            childbox => {
-                childbox.checked = true;
-            }
-        )
-    }
-    else {
-        childboxes.forEach(
-            childbox => {
-                childbox.checked = false;
-            }
-        )
-    }
+    childboxes.forEach(childbox => {
+        childbox.checked = all.checked;
+    });
 });
 
 
-// Pagination
 let prevPage = document.getElementById('prev-page');
 prevPage.addEventListener("click", () => {
     if (currPage == 0) {
-        prevPage.style.backgroundColor = "darkgreen";
-        prevPage.disable = true;
+        prevPage.disabled = true;
         return;
     }
     currPage--;
@@ -494,8 +483,7 @@ prevPage.addEventListener("click", () => {
 let nextPage = document.getElementById('next-page');
 nextPage.addEventListener("click", () => {
     if (currPage == totalPages - 1) {
-        nextPage.disable = true;
-        prevPage.style.backgroundColor = "darkgreen";
+        nextPage.disabled = true;
         return;
     }
     currPage++;
@@ -503,23 +491,20 @@ nextPage.addEventListener("click", () => {
 })
 
 
-//Sorting normal
 let sortSelect = document.getElementById('sort-select');
 sortSelect.addEventListener("change", () => {
     currPage = 0;
-    values = sortSelect.value.split(',');
+    let values = sortSelect.value.split(',');
     sortBy = values[0];
     order = values[1];
     init();
 })
 
 
-// Sorting header
 const headers = ["head-name", "head-age", "head-position", "head-salary", "head-joinDate"];
-//applying event listener to all headers
 headers.forEach(id => {
     const btn = document.getElementById(id);
-    btn.dataset.order = "asc"; // by default It should be in asc order
+    btn.dataset.order = "asc";
     btn.addEventListener("click", () => {
         btn.dataset.order = btn.dataset.order === "asc" ? "desc" : "asc";
         sortBy = btn.value;
@@ -529,7 +514,6 @@ headers.forEach(id => {
     });
 });
 
-//Searching
 let searchInput = document.getElementById("search-input");
 let searchTimeout;
 
@@ -550,17 +534,5 @@ searchInput.addEventListener("input", () => {
     }, 300);
 });
 
-
-//random fulling
-document.getElementById('random-btn').addEventListener("click", () => {
-    document.getElementById("employeeName").value = names[Math.floor(Math.random() * (names.length - 1))];
-    document.getElementById("employeeAge").value = Math.floor(Math.random() * (85 - 18) + 18);
-    document.getElementById("position").value = positions[Math.floor(Math.random() * (positions.length - 1))];
-    document.getElementById("salary").value = Math.floor((Math.random() * (100000 - 1000) + 1000)) + Math.ceil(Math.random() * 100) * 0.01;
-    document.getElementById("joinDate").value = new Date(Math.random() * Date.now()).toISOString().split("T")[0];
-})
-
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("DOMContentLoaded", addEmployeeToReport);
-// when the DOM is ready, call init
-// DOMContentLoaded => when HTML is parsed and DOM is built (doesn't wait for images/CSS)

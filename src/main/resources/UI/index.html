@@ -33,21 +33,23 @@
 	</header>
 	<main>
 		<div class="table-wrap">
-			<table>
-				<thead>
-					<tr>
-						<th><input type="checkbox" id="all"></th>
-						<th><button id="head-name" value="employeeName">Employee Name</button></th>
-						<th><button id="head-age" value="employeeAge">Age</button></th>
-						<th><button id="head-position" value="position">Position</button></th>
-						<th><button id="head-salary" value="salary">Salary</button></th>
-						<th><button id="head-joinDate" value="joinDate">Join Date</button></th>
-						<th><button id="head-reportTo" value="reportTo">Report To</button></th>
-						<th><button>Action</button></th>
-					</tr>
-				</thead>
-				<tbody id="table-body"></tbody>
-			</table>
+			<div id="table-container">
+				<table>
+					<thead>
+						<tr>
+							<th><input type="checkbox" id="all"></th>
+							<th><button id="head-name" value="employeeName">Employee Name</button></th>
+							<th><button id="head-age" value="employeeAge">Age</button></th>
+							<th><button id="head-position" value="position">Position</button></th>
+							<th><button id="head-salary" value="salary">Salary</button></th>
+							<th><button id="head-joinDate" value="joinDate">Join Date</button></th>
+							<th><button id="head-reportTo" value="reportTo">Report To</button></th>
+							<th><button>Action</button></th>
+						</tr>
+					</thead>
+					<tbody id="table-body"></tbody>
+				</table>
+			</div>
 		</div>
 		<div id="pagination">
 			<Button id="prev-page">Previous</Button>
@@ -67,40 +69,58 @@
 				<button id="no">No</button>
 			</div>
 		</div>
+
 		<div id="add-form">
 			<div id="employee-add">Employee Details</div>
-			<button id="random-btn">Random Data</button>
+			<!-- <button id="random-btn">Random Data</button> -->
 			<button id="cross">✖</button>
 			<form id="add-form-form">
 				<div class="full">
 					<label for="employeeName">Name</label>
 					<input id="employeeName" type="text" class="input-form" name="employeeName" placeholder="Raj Kar"
 						required>
+					<span class="field-error" id="employeeName-error"></span>
 				</div>
 
 				<div>
 					<label for="employeeAge">Age</label>
 					<input id="employeeAge" type="number" class="input-form" name="employeeAge" placeholder="21"
 						required>
+					<span class="field-error" id="employeeAge-error"></span>
 				</div>
 
 				<div>
 					<label for="position">Position</label>
-					<input id="position" type="text" class="input-form" name="position" placeholder="Software Developer"
-						required>
+					<select id="position" name="position" required>
+						<option value="">-- Select Position --</option>
+						<option value="SDE">SDE</option>
+						<option value="SDE II">SDE II</option>
+						<option value="Senior SDE">Senior SDE</option>
+						<option value="Intern">Intern</option>
+						<option value="Team Lead">Team Lead</option>
+						<option value="Engineering Manager">Engineering Manager</option>
+						<option value="DevOps Engineer">DevOps Engineer</option>
+						<option value="QA Engineer">QA Engineer</option>
+						<option value="Product Manager">Product Manager</option>
+						<option value="Data Analyst">Data Analyst</option>
+						<option value="Backend Developer">Backend Developer</option>
+						<option value="Frontend Developer">Frontend Developer</option>
+						<option value="Full Stack Developer">Full Stack Developer</option>
+						<option value="Cloud Architect">Cloud Architect</option>
+						<option value="Other">Other</option>
+					</select>
+					<span class="field-error" id="position-error"></span>
+
 				</div>
 
 				<div>
 					<label for="salary">Salary</label>
 					<input id="salary" type="number" class="input-form" name="salary" step="0.01" placeholder="10000.0"
 						required>
+					<span class="field-error" id="position-error"></span>
+
 				</div>
 
-				<div>
-					<label for="joinDate">Join Date</label>
-					<input id="joinDate" type="date" id="joinDate" class="input-form" name="joinDate"
-						placeholder="09/09/2020">
-				</div>
 				<div>
 					<label for="reportTo">Reports To</label>
 					<select id="report-to" class="input-form">Report to
@@ -108,7 +128,14 @@
 					</select>
 				</div>
 
-				<input type="button" value="Add Employee" id="submit-btn" class="full">
+				<div>
+					<label for="joinDate">Join Date</label>
+					<input id="joinDate" type="date" id="joinDate" class="input-form" name="joinDate"
+						placeholder="09/09/2020">
+				</div>
+
+
+				<input type="button" value="Add Employee" id="submit-btn">
 
 			</form>
 			<div class="alert-form">
