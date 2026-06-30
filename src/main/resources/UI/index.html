@@ -14,9 +14,7 @@
 		<div id="nav">
 			<div id="logo">
 			</div>
-			<button id="add-btn">+ Add Employee</button>
-			<button id="delete-btn">🗑️ Delete</button>
-			<select id="sort-select">
+			<!-- <select id="sort-select">
 				<option value="employeeName,asc">Name A→Z (Ascending)</option>
 				<option value="employeeName,desc">Name Z→A (Descending)</option>
 				<option value="joinDate,asc">Join Date (Ascending)</option>
@@ -27,8 +25,21 @@
 				<option value="age,desc">Age (Descending)</option>
 				<option value="position,asc">Position (Ascending)</option>
 				<option value="position,desc">Position (Descending)</option>
+			</select> -->
+			<input type="text" id="search-input" placeholder="Search 📢">
+			<button id="add-btn">+ Employee</button>
+			<button id="delete-btn">🗑️ Delete</button>
+			<select id="csv-download">
+				<option value="">
+					------None------
+				</option>
+				<option id="csv-page" value="page-csv">
+					Download CSV (Page)
+				</option>
+				<option  id="csv-all" value="full-csv">
+					Download CSV (Complete)
+				</option>
 			</select>
-			<input type="text" id="search-input" placeholder="Search employees...">
 		</div>
 	</header>
 	<main>
@@ -72,7 +83,7 @@
 
 		<div id="add-form">
 			<div id="employee-add">Employee Details</div>
-			<!-- <button id="random-btn">Random Data</button> -->
+			<button id="random-btn">Random Data</button>
 			<button id="cross">✖</button>
 			<form id="add-form-form">
 				<div class="full">
@@ -146,6 +157,7 @@
 	<footer>
 
 	</footer>
+
 </body>
 
 </html>

@@ -40,12 +40,11 @@ button {
 #add-btn {
 	background-color: #157347;
 	color: white;
-	font-size: 0.85rem;
+	font-size:small;
 	font-weight: 600;
-	padding: 8px 16px;
+	padding: 8px 8px;
 	border-radius: 8px;
 	border: none;
-	letter-spacing: 0.3px;
 }
 
 #add-btn:hover {
@@ -77,12 +76,15 @@ header {
 	background: #198754;
 	border-bottom: 1px solid #2d2d2d;
 	display: flex;
-	align-items: center;
-	align-content: center;
-	justify-content: space-around;
+	align-content:space-between;
+	justify-content:flex-end;
 	box-sizing: border-box;
 	z-index: 10;
 	border-radius: 50px;
+}
+
+#search-input{
+	min-width:80%;
 }
 
 #logo {
@@ -229,8 +231,8 @@ tr:hover td {
 
 #prev-page:disabled,
 #next-page:disabled {
-	background-color: #177d4d;
-	color: greenyellow;
+	background-color: gray;
+	color: snow;
 	pointer-events: none;
 }
 
@@ -509,15 +511,15 @@ label {
 	width: 100%;
 }
 
-#sort-select {
+/* #sort-select{ 
 	background-color: #1a1a2e;
 	color: white;
 	border: 1px solid #2d2d2d;
 	border-radius: 10px;
-	padding: 8px 12px;
+	padding: 8px 8px;
 	font-size: 0.85rem;
 	cursor: pointer;
-}
+ */
 
 #sort-select:hover {
 	border-color: #198754;
@@ -599,6 +601,24 @@ input[type="submit"] {
 input[type="submit"]:hover {
 	opacity: 0.85;
 }
+
+#csv-download{
+	background-color: #1a1a2e;
+	color: white;
+	border: 1px solid #2d2d2d;
+	border-radius: 10px;
+	padding: 8px 8px;
+	font-size: 0.85rem;
+	cursor: pointer;
+	min-width: 180px;
+}
+
+.center{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
 
 @keyframes shake {
 

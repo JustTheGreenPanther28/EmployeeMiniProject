@@ -1,6 +1,6 @@
 let employees = [];
 const api = "http://localhost:1010/api/v1/employee";
-let size = 15;
+let size = 7;
 let totalPages = 0;
 let currPage = 0;
 let sortBy = "employeeName";
@@ -213,6 +213,8 @@ function attachRowListeners() {
             }
         });
     });
+
+
 }
 
 async function searchEmployees(query) {
@@ -490,15 +492,23 @@ nextPage.addEventListener("click", () => {
     init();
 })
 
-
-let sortSelect = document.getElementById('sort-select');
-sortSelect.addEventListener("change", () => {
-    currPage = 0;
-    let values = sortSelect.value.split(',');
-    sortBy = values[0];
-    order = values[1];
-    init();
+//random fulling
+document.getElementById('random-btn').addEventListener("click", () => {
+    document.getElementById("employeeName").value = names[Math.floor(Math.random() * (names.length - 1))];
+    document.getElementById("employeeAge").value = Math.floor(Math.random() * (85 - 18) + 18);
+    document.getElementById("position").value = positions[Math.floor(Math.random() * (positions.length - 1))];
+    document.getElementById("salary").value = Math.floor((Math.random() * (100000 - 1000) + 1000)) + Math.ceil(Math.random() * 100) * 0.01;
+    document.getElementById("joinDate").value = new Date(Math.random() * Date.now()).toISOString().split("T")[0];
 })
+
+// let sortSelect = document.getElementById('sort-select');
+// sortSelect.addEventListener("change", () => {
+//     currPage = 0;
+//     let values = sortSelect.value.split(',');
+//     sortBy = values[0];
+//     order = values[1];
+//     init();
+// })
 
 
 const headers = ["head-name", "head-age", "head-position", "head-salary", "head-joinDate"];
@@ -532,6 +542,47 @@ searchInput.addEventListener("input", () => {
     searchTimeout = setTimeout(() => {
         searchEmployees(query);
     }, 300);
+});
+
+let csvDownload = document.getElementById('csv-download');
+csvDownload.addEventListener("change", async () => {
+
+    let optionVal = csvDownload.value;
+    if(optionVal==""){
+        return;
+    }
+
+    try {
+         document.getElementById("csv-page").disabled = true;
+         document.getElementById('csv-all').disabled = true;
+        let response;
+        if (optionVal == "full-csv") {
+            response = await fetch(api + `?fullCsv=true`)
+        }
+        else {
+            response = await fetch(api + `?page=${currPage}&size=${size}&sortBy=${sortBy}&order=${order}&csv=true`);
+        }
+        if (!response.ok) {
+            throw new Error("Export failed");
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "employees.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+    } catch (err) {
+        console.error(err);
+        showAlert(err.message, success = false);
+    } finally {
+        document.getElementById("csv-page").disabled = false;
+        document.getElementById('csv-all').disabled = false;
+    }
 });
 
 document.addEventListener("DOMContentLoaded", init);
