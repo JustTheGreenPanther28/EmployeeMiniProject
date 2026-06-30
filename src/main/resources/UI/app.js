@@ -111,7 +111,7 @@ async function fetchEmployees(page, size, sortBy, order) {
 // employee report to in additon of employee
 async function addEmployeeToReport() {
 
-    const response = await fetch(api+ "?report=true", {
+    const response = await fetch(api + "?report=true", {
         method: "GET"
     })
 
@@ -285,7 +285,7 @@ async function init() {
             <td>${employee.position}</td>
             <td>${employee.salary}</td>
             <td>${new Date(employee.joinDate).toLocaleDateString()}</td>
-            <td><button class="reportToBtn" data-id="${employee.employeeId}" reporter="${employee.reportTo.reporter}" reportTo="${employee.reportTo.reportTo}">Report To</button></td>
+            <td><button class="reportToBtn" reporter="${employee.employeeName}" reportTo="${employee.reportTo}">Report To</button></td>
             <td><button class="editBtn" 
             data-id = "${employee.employeeId}" 
             name = "${employee.employeeName}"
@@ -364,7 +364,7 @@ async function init() {
                     showAlert(`Failed to delete ${btn.getAttribute('name')}, as other people report to him!`, success = false);
                 }
             } catch (error) {
-                showAlert("Failed: " + error.message,success=false);
+                showAlert("Failed: " + error.message, success = false);
             }
         })
     })
@@ -409,14 +409,11 @@ deletebtn.addEventListener("click", async () => {
             headers: { "Content-Type": "application/json" }
         });
         if (response.ok) {
-            if (checkboxes.length == 1) {
-                showAlert("Employee Successfully deleted!", success = true);
-            }
-            else {
-                showAlert("Employees Successfully deleted!", success = true);
-            }
+            const json = await response.json();
+            showAlert(json.deletionCount + " Employee(s) Successfully deleted!", success = true);
             init();
-        } else {
+        } 
+        else {
             const text = await response.text();
             if (checkboxes.length == 1) {
                 const message = text ? JSON.parse(text).message : response.statusText;
@@ -435,13 +432,15 @@ deletebtn.addEventListener("click", async () => {
                         headers: { "Content-Type": "application/json" }
                     });
                     if (response.ok) {
-                        showAlert("Employees who were not referenced by other employees were Removed", success = true);
+                        showAlert("loading...",success=true);
+                        const json1 = await response.json();
+                        showAlert(json1.deletionCount + " Employees (who were not referenced by other employees) were Removed", success = true);
                         takenInput.style.display = 'none';
                         document.body.classList.remove('blocked');
                         init();
                     }
                     else {
-                        showAlert("Failed! Some error occured!", success = false);
+                        showAlert("Employee(s) can't be deleted!", success = false);
                         takenInput.style.display = 'none';
                         document.body.classList.remove('blocked');
                     }
@@ -453,8 +452,7 @@ deletebtn.addEventListener("click", async () => {
             }
         }
     } catch (error) {
-        showAlert("Failed: "+"All of the selected employees can't be deleted", success = false);
-
+        showAlert("Unable to delete employees!",success=false);
     }
     document.getElementById("all").checked = false;
 });

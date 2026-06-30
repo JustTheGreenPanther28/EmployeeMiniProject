@@ -95,12 +95,12 @@ public class EmployeeController {
 		}
 		if (searchDelete) {
 			int numberOfDeletedIds = employeeService.searchDelete(ids);
-			return ResponseEntity.status(HttpStatus.NO_CONTENT)
+			return ResponseEntity.ok()
 					.body(Map.of("deletionCount", numberOfDeletedIds, "skippedCount", ids.size() - numberOfDeletedIds));
 		}
 
 		int numberOfDeletedIds = employeeService.deleteEmployees(ids);
-		return ResponseEntity.status(HttpStatus.NO_CONTENT)
+		return ResponseEntity.ok()
 				.body(Map.of("deletionCount", numberOfDeletedIds, "skippedCount", ids.size() - numberOfDeletedIds));
 	}
 

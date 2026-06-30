@@ -38,7 +38,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 			EmployeeResponse employeeResponse = new EmployeeResponse(employeeEntity);
 			return employeeResponse;
 		});
-		
+
 		return response;
 	}
 
@@ -50,7 +50,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 	@Override
 	public Page<EmployeeResponse> searchEmployees(String query) {
-		return employeeRepo.findByEmployeeNameContainingIgnoreCaseOrPositionContainingIgnoreCase(query, query)
+		Pageable pageable = PageRequest.of(0, 1000);
+		return employeeRepo.findByEmployeeNameContainingIgnoreCaseOrPositionContainingIgnoreCase(query, query, pageable)
 				.map(employeeEntity -> {
 					EmployeeResponse response = new EmployeeResponse(employeeEntity);
 					return response;
