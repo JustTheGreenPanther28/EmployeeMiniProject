@@ -1,32 +1,12 @@
 let employees = [];
 const api = "http://localhost:1010/api/v1/employee";
-let size = 7;
+let size = 14;
 let totalPages = 0;
 let currPage = 0;
 let sortBy = "employeeName";
 let order = "asc";
+let totalEmployee=0;
 let submitBtn = document.getElementById("submit-btn");
-
-const names = [
-    "Rahul Sharma", "Priya Singh", "Amit Kumar", "Neha Gupta", "Raj Patel",
-    "Anjali Verma", "Vikram Mehta", "Pooja Joshi", "Arjun Nair", "Sneha Iyer",
-    "Rohan Desai", "Kavita Reddy", "Suresh Yadav", "Deepika Pillai", "Manish Tiwari",
-    "Riya Kapoor", "Karan Malhotra", "Simran Kaur", "Aditya Bhatt", "Shruti Pandey",
-    "Varun Saxena", "Nisha Jain", "Mohit Agarwal", "Divya Mishra", "Sanjay Dubey",
-    "Ananya Krishnan", "Gaurav Shukla", "Tanvi Choudhary", "Nikhil Banerjee", "Pallavi Sen",
-    "Vishal Rawat", "Meera Nambiar", "Akash Tripathi", "Ritu Srivastava", "Harsh Vardhan",
-    "Swati Kulkarni", "Pranav Doshi", "Ishaan Chatterjee", "Lavanya Menon", "Kunal Bose",
-    "Aditi Ghosh", "Yash Thakur", "Nandini Rao", "Siddharth Naik", "Kritika Bajaj",
-    "Abhinav Pandya", "Shraddha Patil", "Tarun Mathur", "Komal Shah", "Dhruv Rathore"
-];
-
-const positions = [
-    "SDE", "SDE II", "Senior SDE", "Intern", "Team Lead",
-    "Engineering Manager", "DevOps Engineer", "QA Engineer",
-    "Product Manager", "Data Analyst", "Backend Developer",
-    "Frontend Developer", "Full Stack Developer", "Cloud Architect"
-];
-
 
 function showAlert(message, success, position = "body") {
     let alert, msg;
@@ -37,7 +17,6 @@ function showAlert(message, success, position = "body") {
         msg = document.getElementsByClassName("alert-form-message")[0];
 
         if (!success) {
-            form?.classList.add("shake");
             if (form) form.style.borderColor = "crimson";
             alert.style.backgroundColor = "#f8d7da";
             alert.style.borderColor = "#f1aeb5";
@@ -58,7 +37,6 @@ function showAlert(message, success, position = "body") {
                 alertHeading.style.color = "red";
                 alertHeading.style.textDecorationColor = "rgb(149, 20, 45)";
             }
-            document.body.classList.add("shake-body");
         } else {
             if (alertHeading) {
                 alertHeading.style.color = "yellowgreen";
@@ -80,12 +58,10 @@ function showAlert(message, success, position = "body") {
         alert.style.display = "none";
         msg.textContent = "";
         document.body.classList.remove("blocked");
-        document.body.classList.remove("shake-body");
 
         const form = document.getElementById("add-form");
         if (form) {
             form.style.borderColor = "#176842";
-            form.classList.remove("shake");
         }
     }, 5000);
 }
@@ -96,6 +72,8 @@ async function fetchEmployees(page, size, sortBy, order) {
         let response = await fetch(api + `?page=${page}&size=${size}&sortBy=${sortBy}&order=${order}`);
         if (response.ok) {
             let data = await response.json();
+            console.log(data);
+            totalEmployee = data.totalElements;
             employees = data.content;
             totalPages = data.totalPages;
         } else {
@@ -107,28 +85,30 @@ async function fetchEmployees(page, size, sortBy, order) {
     return employees;
 }
 
+let reportToOptions = [];
+
 async function addEmployeeToReport() {
+    const response = await fetch(api + "?report=true");
 
-    const response = await fetch(api + "?report=true", {
-        method: "GET"
-    })
+    if (!response.ok) return;
 
-    if (response.ok) {
+    const data = await response.json();
 
-        let data = await response.json();
+    if (!data || data.length === 0) return;
 
-        console.log(data);
+    reportToOptions = data;
+    renderReportToOptions(reportToOptions);
+}
 
-        if (data == undefined || data == null || data == "") {
-            return;
-        }
-        let reportTo = document.getElementById('report-to');
-        reportTo.innerHTML = `<option value="" id="none">-- None --</option>`;
+function renderReportToOptions(list) {
+    const datalist = document.getElementById("report-to-list");
+    datalist.innerHTML = "";
 
-        for (let countAndName of data) {
-            let newOption = new Option(`${countAndName.employeeName}  (${countAndName.count})`, `${countAndName.employeeId}`);
-            reportTo.add(newOption);
-        }
+    for (const employee of list) {
+        const option = document.createElement("option");
+        option.value = `${employee.employeeName}` + ` (${employee.count})`;
+        option.dataset.id = employee.employeeId;
+        datalist.appendChild(option);
     }
 }
 
@@ -161,6 +141,7 @@ function buildRow(employee) {
 function attachRowListeners() {
     document.querySelectorAll(".reportToBtn").forEach(btn => {
         btn.addEventListener("click", () => {
+
             let reporter = btn.getAttribute("reporter");
             let reportTo = btn.getAttribute("reportTo");
             if (!reportTo || reportTo === "null") {
@@ -184,7 +165,18 @@ function attachRowListeners() {
             document.getElementById('position').value = btn.getAttribute('position') || "";
             document.getElementById('salary').value = btn.getAttribute('salary');
             document.getElementById('joinDate').value = btn.getAttribute('joinDate').split("T")[0];
-            document.getElementById('report-to').value = btn.getAttribute('reportToId') || "";
+
+            const reportToId = btn.getAttribute('reportToId') || "";
+            const reportToInput = document.getElementById('report-to');
+            reportToInput.value = "";
+
+            if (reportToId) {
+                const match = reportToOptions.find(e => String(e.employeeId) === String(reportToId));
+                if (match) {
+                    reportToInput.value = `${match.employeeName} (${match.count})`;
+                    reportToInput.dataset.id = match.employeeId;
+                }
+            }
 
             submitBtn.replaceWith(submitBtn.cloneNode(true));
             submitBtn = document.getElementById("submit-btn");
@@ -214,7 +206,17 @@ function attachRowListeners() {
         });
     });
 
+    document.querySelectorAll(".child-boxes").forEach(childbox => {
+        childbox.addEventListener("click", () => {
+            const allBoxes = document.querySelectorAll(".child-boxes");
+            const checkedBoxes = document.querySelectorAll('input[name="employeeSelect"]:checked');
 
+            document.getElementById("all").checked =
+                allBoxes.length > 0 && checkedBoxes.length === allBoxes.length;
+
+            document.getElementById('delete-btn').disabled = checkedBoxes.length === 0;
+        });
+    });
 }
 
 async function searchEmployees(query) {
@@ -251,7 +253,7 @@ async function submit(id = null) {
     let position = document.getElementById("position").value;
     let salary = document.getElementById("salary").value;
     let joinDate = document.getElementById("joinDate").value;
-    let reportTo = document.getElementById("report-to").value;
+    let reportTo = document.getElementById("report-to").dataset.id;
 
     if (joinDate == undefined || joinDate == "") {
         joinDate = new Date().toISOString();
@@ -358,6 +360,7 @@ function clearAllFieldErrors() {
 }
 
 async function init() {
+    document.getElementById('delete-btn').disabled = true;
     let employeeValues = await fetchEmployees(currPage, size, sortBy, order);
 
     let currentPage = document.getElementById("curr-page");
@@ -393,11 +396,37 @@ document.getElementById("add-btn").addEventListener("click", () => {
     submitBtn.addEventListener("click", () => submit());
 });
 
+let reportToInput = document.getElementById("report-to");
+reportToInput.addEventListener("input", () => {
+    const rawValue = reportToInput.value;
+
+    const exactMatch = reportToOptions.find(
+        e => `${e.employeeName} (${e.count})` === rawValue
+    );
+
+    if (exactMatch) {
+        reportToInput.dataset.id = exactMatch.employeeId;
+        renderReportToOptions(reportToOptions);
+        return;
+    }
+
+    delete reportToInput.dataset.id;
+
+    const query = rawValue.trim().toLowerCase();
+    const filtered = query
+        ? reportToOptions.filter(e => e.employeeName.toLowerCase().startsWith(query))
+        : reportToOptions;
+
+    renderReportToOptions(filtered);
+});
+
 document.getElementById('cross').addEventListener("click", () => {
     let addform = document.getElementById('add-form');
     document.body.classList.remove('blocked');
     addform.style.display = 'none';
     document.getElementById('add-form-form').reset();
+    delete document.getElementById('report-to').dataset.id;
+    clearAllFieldErrors();
 });
 
 let deletebtn = document.getElementById("delete-btn");
@@ -469,6 +498,12 @@ all.addEventListener("click", () => {
     childboxes.forEach(childbox => {
         childbox.checked = all.checked;
     });
+    if (all.checked == false) {
+        document.getElementById('delete-btn').disabled = true;
+    }
+    else {
+        document.getElementById('delete-btn').disabled = false;
+    }
 });
 
 
@@ -491,25 +526,6 @@ nextPage.addEventListener("click", () => {
     currPage++;
     init();
 })
-
-//random fulling
-document.getElementById('random-btn').addEventListener("click", () => {
-    document.getElementById("employeeName").value = names[Math.floor(Math.random() * (names.length - 1))];
-    document.getElementById("employeeAge").value = Math.floor(Math.random() * (85 - 18) + 18);
-    document.getElementById("position").value = positions[Math.floor(Math.random() * (positions.length - 1))];
-    document.getElementById("salary").value = Math.floor((Math.random() * (100000 - 1000) + 1000)) + Math.ceil(Math.random() * 100) * 0.01;
-    document.getElementById("joinDate").value = new Date(Math.random() * Date.now()).toISOString().split("T")[0];
-})
-
-// let sortSelect = document.getElementById('sort-select');
-// sortSelect.addEventListener("change", () => {
-//     currPage = 0;
-//     let values = sortSelect.value.split(',');
-//     sortBy = values[0];
-//     order = values[1];
-//     init();
-// })
-
 
 const headers = ["head-name", "head-age", "head-position", "head-salary", "head-joinDate"];
 headers.forEach(id => {
@@ -548,16 +564,16 @@ let csvDownload = document.getElementById('csv-download');
 csvDownload.addEventListener("change", async () => {
 
     let optionVal = csvDownload.value;
-    if(optionVal==""){
+    if (optionVal == "") {
         return;
     }
 
     try {
-         document.getElementById("csv-page").disabled = true;
-         document.getElementById('csv-all').disabled = true;
+        document.getElementById("csv-page").disabled = true;
+        document.getElementById('csv-all').disabled = true;
         let response;
         if (optionVal == "full-csv") {
-            response = await fetch(api + `?fullCsv=true`)
+            response = await fetch(api + `?page=${currPage}&size=${totalEmployee}&sortBy=${sortBy}&order=${order}&csv=true`)
         }
         else {
             response = await fetch(api + `?page=${currPage}&size=${size}&sortBy=${sortBy}&order=${order}&csv=true`);
@@ -586,4 +602,3 @@ csvDownload.addEventListener("change", async () => {
 });
 
 document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("DOMContentLoaded", addEmployeeToReport);

@@ -10,6 +10,7 @@ body {
 	min-height: 100vh;
 	background-repeat: no-repeat;
 	background-attachment: fixed;
+	overflow: hidden;
 }
 
 body.blocked {
@@ -67,9 +68,15 @@ button {
 	color: white;
 }
 
+#delete-btn:disabled{
+	background-color: gray;
+	color:white;
+	cursor: not-allowed;
+}
+
 header {
 	position: sticky;
-	top: 0;
+	top: 12px;
 	width: 100%;
 	padding: 0 24px;
 	height: 64px;
@@ -143,10 +150,31 @@ header {
 }
 
 #table-container {
-	max-height: 500px;
+	max-height: 400px;
 	overflow-y: auto;
 	border-radius: 12px;
 	width: 100%;
+	scrollbar-width: thin;
+	scrollbar-color: #198754 #1a1a1a;
+}
+
+#table-container::-webkit-scrollbar {
+	width: 10px;
+}
+
+#table-container::-webkit-scrollbar-track {
+	background: #1a1a1a;
+	border-radius: 12px;
+}
+
+#table-container::-webkit-scrollbar-thumb {
+	background-color: #198754;
+	border-radius: 10px;
+	border: 2px solid #1a1a1a;
+}
+
+#table-container::-webkit-scrollbar-thumb:hover {
+	background-color: #157347;
 }
 
 table {
@@ -166,6 +194,22 @@ th {
 	font-size: 13px;
 	color: white;
 	font-weight: 800;
+}
+thead th {
+    text-align: center;
+    vertical-align: middle;
+}
+
+thead th button {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    border: none;
+    color: white;
+    font: inherit;
+    cursor: pointer;
 }
 
 th {
@@ -233,7 +277,7 @@ tr:hover td {
 #next-page:disabled {
 	background-color: gray;
 	color: snow;
-	pointer-events: none;
+	cursor:not-allowed;
 }
 
 #add-form {
@@ -266,11 +310,12 @@ tr:hover td {
 }
 
 .input-error {
-	border: 2px solid #dc3545 !important;
-	background-color: #fff5f5 !important;
+	border: 2px solid #dc3545;
+	background-color: #fff5f5;
 }
 
 .field-error {
+	padding:5px;
 	display: block;
 	color: #dc3545;
 	font-size: 11px;

@@ -31,12 +31,12 @@
 			<button id="delete-btn">🗑️ Delete</button>
 			<select id="csv-download">
 				<option value="">
-					------None------
+					------Download------
 				</option>
 				<option id="csv-page" value="page-csv">
 					Download CSV (Page)
 				</option>
-				<option  id="csv-all" value="full-csv">
+				<option id="csv-all" value="full-csv">
 					Download CSV (Complete)
 				</option>
 			</select>
@@ -83,7 +83,7 @@
 
 		<div id="add-form">
 			<div id="employee-add">Employee Details</div>
-			<button id="random-btn">Random Data</button>
+			<!-- <button id="random-btn">Random Data</button> -->
 			<button id="cross">✖</button>
 			<form id="add-form-form">
 				<div class="full">
@@ -100,7 +100,7 @@
 					<span class="field-error" id="employeeAge-error"></span>
 				</div>
 
-				<div>
+				<div class="full">
 					<label for="position">Position</label>
 					<select id="position" name="position" required>
 						<option value="">-- Select Position --</option>
@@ -126,23 +126,23 @@
 
 				<div>
 					<label for="salary">Salary</label>
-					<input id="salary" type="number" class="input-form" name="salary" step="0.01" placeholder="10000.0"
-						required>
-					<span class="field-error" id="position-error"></span>
+					<input id="salary" type="number" class="input-form" name="salary" placeholder="10000.0" required>
+					<span class="field-error" id="salary-error"></span>
 
 				</div>
 
-				<div>
-					<label for="reportTo">Reports To</label>
-					<select id="report-to" class="input-form">Report to
+				<div class="full">
+					<label for="report-to">Reports To</label>
 
-					</select>
+					<input id="report-to" class="input-form" list="report-to-list" placeholder="Search employee..."
+						autocomplete="off">
+
+					<datalist id="report-to-list"></datalist>
 				</div>
 
 				<div>
 					<label for="joinDate">Join Date</label>
-					<input id="joinDate" type="date" id="joinDate" class="input-form" name="joinDate"
-						placeholder="09/09/2020">
+					<input id="joinDate" type="date" class="input-form" name="joinDate" placeholder="09/09/2020">
 				</div>
 
 
