@@ -14,14 +14,16 @@ public interface EmployeeService {
 	EmployeeResponse addEmployee(EmployeeAdditionRequest employeeAdditionRequest);
 
 	Page<EmployeeResponse> getEmployees(int page, int size, String sortBy, String order);
-	List<EmployeeProjectionInterface> getReports() throws EmployeeNotFoundException;
+	List<EmployeeProjectionInterface> getReports();
 
-	
-	EmployeeResponse updateEmployee(UUID id , EmployeeAdditionRequest employeeChangeRequest);
-	
+	String exportEmployeesAsCsv(int page, int size, String sortBy, String order);
+
+	EmployeeResponse updateEmployee(UUID id, EmployeeAdditionRequest employeeChangeRequest);
+
 	Page<EmployeeResponse> searchEmployees(String query);
-	
+
 	void deleteEmployee(UUID publicId);
 	int deleteEmployees(List<String> publicIds);
 	int searchDelete(List<String> publicIds);
+
 }

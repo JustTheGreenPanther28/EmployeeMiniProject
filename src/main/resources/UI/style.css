@@ -315,7 +315,7 @@ tr:hover td {
 }
 
 .field-error {
-	padding:5px;
+	padding:7px;
 	display: block;
 	color: #dc3545;
 	font-size: 11px;

@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,7 +33,7 @@ import jakarta.validation.constraints.NotNull;
 @RestController
 @RequestMapping("api/v1/employee")
 @CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE,
-		RequestMethod.PATCH, RequestMethod.OPTIONS })
+		RequestMethod.PATCH })
 @Tag(name = "Employee Management", description = "APIs for managing employees — add, update, delete, search, and reporting hierarchy")
 public class EmployeeController {
 
@@ -61,9 +62,13 @@ public class EmployeeController {
 			@RequestParam(defaultValue = "5") @Min(0) int size,
 			@RequestParam(defaultValue = "employeeName") String sortBy,
 			@RequestParam(defaultValue = "asc") String order, @RequestParam(defaultValue = "") String searchQuery,
-			@RequestParam(defaultValue = "false") boolean report) {
+			@RequestParam(defaultValue = "false") boolean report, @RequestParam(defaultValue = "false") boolean csv) {
+
 		if (!searchQuery.isBlank() && report) {
 			throw new InvalidDemandException("You can't invoke report and search at same time!");
+		}
+		if ((report && csv) || (!searchQuery.isBlank() && csv)) {
+			throw new InvalidDemandException("For now CSV is fetching normal data");
 		}
 		if (report) {
 			return ResponseEntity.ok(employeeService.getReports());
@@ -71,6 +76,12 @@ public class EmployeeController {
 		if (!searchQuery.isBlank()) {
 			return ResponseEntity.ok(employeeService.searchEmployees(searchQuery));
 		}
+		if (csv) {
+			return ResponseEntity.ok().header("Content-Disposition", "attachment; filename=\"employees.csv\"")
+					.contentType(MediaType.parseMediaType("text/csv"))
+					.body(employeeService.exportEmployeesAsCsv(page, size, sortBy, order));
+		}
+
 		return ResponseEntity.ok(employeeService.getEmployees(page, size, sortBy, order));
 	}
 

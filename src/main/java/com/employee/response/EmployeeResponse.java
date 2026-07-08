@@ -11,7 +11,7 @@ public class EmployeeResponse {
 	private String position;
 	private double salary;
 	private LocalDateTime joinDate;
-	private String reportTo;
+	private ReportEmployee reportTo;
 
 	public EmployeeResponse() {
 
@@ -25,7 +25,7 @@ public class EmployeeResponse {
 		this.salary = employee.getSalary();
 		this.joinDate = employee.getJoinDate();
 		if (employee.getReportTo() != null) {
-			this.reportTo = employee.getReportTo().getEmployeeName();
+			this.reportTo = new ReportEmployee(employee.getReportTo().getEmployeeName(),employee.getReportTo().getEmployeeId());
 		}
 	}
 
@@ -77,11 +77,11 @@ public class EmployeeResponse {
 		this.joinDate = joinDate;
 	}
 
-	public String getReportTo() {
+	public ReportEmployee getReportTo() {
 		return reportTo;
 	}
 
-	public void setReportTo(String reportTo) {
+	public void setReportTo(ReportEmployee reportTo) {
 		this.reportTo = reportTo;
 	}
 }

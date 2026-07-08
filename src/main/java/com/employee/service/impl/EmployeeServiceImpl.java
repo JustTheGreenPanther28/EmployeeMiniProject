@@ -43,6 +43,36 @@ public class EmployeeServiceImpl implements EmployeeService {
 	}
 
 	@Override
+	public String exportEmployeesAsCsv(int page, int size, String sortBy, String order) {
+
+		StringBuilder csv = new StringBuilder();
+		csv.append("Employee Name, Employee Age, position, salary, joinDate, reportTo" + "\n");
+
+		Sort sort = order.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+		Pageable pageable = PageRequest.of(page, size,sort);
+
+		Page<EmployeeResponse> reponses = employeeRepo.findAll(pageable).map(employee -> {
+			EmployeeResponse response = new EmployeeResponse(employee);
+			return response;
+		});
+
+		reponses.forEach(response -> {
+			csv.append(response.getEmployeeName() + ", " + response.getEmployeeAge() + ", " + response.getPosition()
+					+ ", " + response.getSalary() + ", " + response.getJoinDate() + ", ");
+			if (response.getReportTo() == null) {
+				csv.append("N/A");
+			} else {
+				csv.append(response.getReportTo().getReportToName());
+			}
+			csv.append("\n");
+		});
+		
+		
+		return csv.toString();
+	}
+
+
+	@Override
 	public List<EmployeeProjectionInterface> getReports() {
 		// id = id of employee - who will report to others
 		return employeeRepo.getCountAndEmployees();
@@ -96,6 +126,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 					.orElseThrow(() -> new EmployeeNotFoundException("The employee to report doesn't exist!"));
 
 			employee.setReportTo(employeeToReport);
+		} else {
+			employee.setReportTo(null);
 		}
 
 		employee.setEmployeeName(employeeChangeRequest.name());
